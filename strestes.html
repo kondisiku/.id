@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DASS-42</title>
+    <link rel="icon" type="image/x-icon" href="assets/unima.png" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .question-container {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .question-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            font-size: 1.1em;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .option input[type="radio"] {
+            display: none;
+        }
+
+        .option label {
+            display: block;
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .option label:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .option input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-color: #4facfe;
+            transform: scale(1.02);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 30px 0;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 15px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateX(5px);
+        }
+
+        .result-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .result-card .score {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .result-card .category {
+            font-size: 1.1em;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            color: white;
+        }
+
+        .depression { border-left-color: #e74c3c; }
+        .depression .score { color: #e74c3c; }
+        .depression .category { background: #e74c3c; }
+
+        .anxiety { border-left-color: #f39c12; }
+        .anxiety .score { color: #f39c12; }
+        .anxiety .category { background: #f39c12; }
+
+        .stress { border-left-color: #9b59b6; }
+        .stress .score { color: #9b59b6; }
+        .stress .category { background: #9b59b6; }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .options {
+                flex-direction: column;
+            }
+
+            .option {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>DASS-42</h1>
+            <p>Kalkulator Tingkat Depresi, Kecemasan & Stres</p>
+            <br>
+            <p>Silahkan isi kuisioner dibawah sesuai dengan perasaan anda, agar kami bisa memberikan kalkulasi tingkat DASS-42 yang sesuai</p>
+        </div>
+
+        <div class="content">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <form id="dass42Form">
+                <div id="questionsContainer"></div>
+                
+                <button type="button" class="calculate-btn" id="calculateBtn" onclick="calculateResults()">
+                    Hitung Hasil
+                </button>
+            </form>
+
+            <div class="results" id="results">
+                <div class="result-card depression">
+                    <h3>Tingkat Depresi</h3>
+                    <div class="score" id="depressionScore">0</div>
+                    <div class="category" id="depressionCategory">Normal</div>
+                </div>
+
+                <div class="result-card anxiety">
+                    <h3>Tingkat Kecemasan</h3>
+                    <div class="score" id="anxietyScore">0</div>
+                    <div class="category" id="anxietyCategory">Normal</div>
+                </div>
+
+                <div class="result-card stress">
+                    <h3>Tingkat Stres</h3>
+                    <div class="score" id="stressScore">0</div>
+                    <div class="category" id="stressCategory">Normal</div>
+                </div>
+
+                <div class="warning">
+                    <strong>Penting:</strong> Hasil ini hanya untuk tujuan skrining awal dan bukan diagnosis medis. 
+                    Jika Anda mengalami gejala yang mengganggu kehidupan sehari-hari, 
+                    disarankan untuk berkonsultasi dengan profesional kesehatan mental.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            "Saya mengalami perasaan panik tanpa alasan yang jelas.",
+            "Saya merasa sulit untuk tenang.",
+            "Saya kehilangan minat terhadap hal-hal yang biasanya saya nikmati.",
+            "Saya merasa tegang dan mudah gelisah.",
+            "Saya merasa sedih dan putus harapan hampir setiap hari.",
+            "Saya merasa cemas secara berlebihan terhadap berbagai hal.",
+            "Saya merasa kesulitan menikmati aktivitas yang biasa saya sukai.",
+            "Saya mengalami gangguan tidur (sulit tidur, sering terbangun, atau tidur berlebihan).",
+            "Saya merasa khawatir berlebihan tentang banyak hal.",
+            "Saya merasa rendah diri dan tidak berharga.",
+            "Saya merasa sulit berkonsentrasi atau membuat keputusan.",
+            "Saya berpikir bahwa akan lebih baik jika saya tidak ada.",
+            "Saya merasa murung tanpa alasan yang jelas.",
+            "Saya merasa sulit untuk bahagia atau tersenyum.",
+            "Saya merasa sangat lelah meskipun tidak melakukan banyak aktivitas.",
+            "Saya merasa kewalahan dengan tanggung jawab yang saya miliki.",
+            "Saya merasa tidak bersemangat terhadap hal-hal yang biasanya saya nikmati.",
+            "Saya mengalami keringat berlebihan (misalnya, tangan berkeringat) tanpa alasan jelas.",
+            "Saya merasa sulit untuk rileks.",
+            "Saya sering merasa sedih dan tidak berdaya.",
+            "Saya merasa takut tanpa alasan yang jelas.",
+            "Saya merasa sulit memulai hal-hal baru.",
+            "Saya merasakan jantung berdebar-debar tanpa penyebab jelas.",
+            "Saya merasa tidak mampu menghadapi kesulitan.",
+            "Saya merasa gelisah dan tidak bisa duduk diam.",
+            "Saya merasa tidak memiliki harapan terhadap masa depan.",
+            "Saya merasa bahwa hal-hal kecil pun terasa terlalu berat untuk ditangani.",
+            "Saya merasa kehilangan kendali atas pikiran saya ketika merasa cemas.",
+            "Saya merasa tidak yakin bahwa keadaan saya akan membaik.",
+            "Saya menjadi sangat sensitif terhadap suara, cahaya, atau gangguan kecil lainnya.",
+            "Saya merasa hidup ini tidak berarti.",
+            "Saya mengalami serangan panik secara tiba-tiba.",
+            "Saya merasa sangat tegang dan tidak bisa santai.",
+            "Saya merasa kurang motivasi untuk memulai sesuatu.",
+            "Saya merasa saya tidak berharga sebagai pribadi.",
+            "Saya merasa bahwa tidak ada hal yang menyenangkan dalam hidup saya.",
+            "Saya merasa tidak bisa mengatasi tekanan hidup.",
+            "Saya menjadi mudah tersinggung atau marah karena hal kecil.",
+            "Saya merasa sangat gugup atau cemas bahkan dalam situasi yang biasa.",
+            "Saya merasa bahwa pikiran saya terlalu banyak dan sulit dihentikan.",
+            "Saya merasa seperti berada dalam ketegangan terus-menerus.",
+            "Saya merasa tidak dapat mengalami kesenangan seperti orang lain."
+        ];
+
+        const scaleMapping = {
+            depression: [3, 5, 10, 13, 16, 17, 21, 24, 26, 31, 34, 37, 38, 42],
+            anxiety: [2, 4, 7, 9, 15, 19, 20, 23, 25, 28, 30, 36, 40, 41],
+            stress: [1, 6, 8, 11, 12, 14, 18, 22, 27, 29, 32, 33, 35, 39]
+        };
+
+        const categories = {
+            depression: [
+                { min: 0, max: 9, label: "Normal", color: "#27ae60" },
+                { min: 10, max: 13, label: "Ringan", color: "#f39c12" },
+                { min: 14, max: 20, label: "Sedang", color: "#e67e22" },
+                { min: 21, max: 27, label: "Berat", color: "#e74c3c" },
+                { min: 28, max: 42, label: "Sangat Berat", color: "#8e44ad" }
+            ],
+            anxiety: [
+                { min: 0, max: 7, label: "Normal", color: "#27ae60" },
+                { min: 8, max: 9, label: "Ringan", color: "#f39c12" },
+                { min: 10, max: 14, label: "Sedang", color: "#e67e22" },
+                { min: 15, max: 19, label: "Berat", color: "#e74c3c" },
+                { min: 20, max: 42, label: "Sangat Berat", color: "#8e44ad" }
+            ],
+            stress: [
+                { min: 0, max: 14, label: "Normal", color: "#27ae60" },
+                { min: 15, max: 18, label: "Ringan", color: "#f39c12" },
+                { min: 19, max: 25, label: "Sedang", color: "#e67e22" },
+                { min: 26, max: 33, label: "Berat", color: "#e74c3c" },
+                { min: 34, max: 42, label: "Sangat Berat", color: "#8e44ad" }
+            ]
+        };
+
+        const options = [
+            "Tidak pernah",
+            "Kadang-kadang", 
+            "Sering",
+            "Hampir selalu"
+        ];
+
+        function initializeForm() {
+            const container = document.getElementById('questionsContainer');
+            
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-container';
+                
+                questionDiv.innerHTML = `
+                    <div class="question">${index + 1}. ${question}</div>
+                    <div class="options">
+                        ${options.map((option, optionIndex) => `
+                            <div class="option">
+                                <input type="radio" id="q${index + 1}_${optionIndex}" name="question${index + 1}" value="${optionIndex}">
+                                <label for="q${index + 1}_${optionIndex}">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+
+            // Add event listeners for progress tracking
+            const radioInputs = document.querySelectorAll('input[type="radio"]');
+            radioInputs.forEach(input => {
+                input.addEventListener('change', updateProgress);
+            });
+        }
+
+        function updateProgress() {
+            const totalQuestions = questions.length;
+            let answeredQuestions = 0;
+
+            for (let i = 1; i <= totalQuestions; i++) {
+                const questionInputs = document.querySelectorAll(`input[name="question${i}"]`);
+                if (Array.from(questionInputs).some(input => input.checked)) {
+                    answeredQuestions++;
+                }
+            }
+
+            const progress = (answeredQuestions / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            const calculateBtn = document.getElementById('calculateBtn');
+            if (answeredQuestions === totalQuestions) {
+                calculateBtn.disabled = false;
+                calculateBtn.style.opacity = '1';
+            } else {
+                calculateBtn.disabled = true;
+                calculateBtn.style.opacity = '0.6';
+            }
+        }
+
+        function calculateResults() {
+            const results = { depression: 0, anxiety: 0, stress: 0 };
+            
+            // Calculate scores for each scale
+            Object.keys(scaleMapping).forEach(scale => {
+                scaleMapping[scale].forEach(questionNum => {
+                    const selectedInput = document.querySelector(`input[name="question${questionNum}"]:checked`);
+                    if (selectedInput) {
+                        results[scale] += parseInt(selectedInput.value);
+                    }
+                });
+            });
+
+            displayResults(results);
+        }
+
+        function getCategory(scale, score) {
+            const scaleCategories = categories[scale];
+            for (let category of scaleCategories) {
+                if (score >= category.min && score <= category.max) {
+                    return category;
+                }
+            }
+            return scaleCategories[0]; // Default to normal
+        }
+
+        function displayResults(results) {
+            // Update depression results
+            const depressionCategory = getCategory('depression', results.depression);
+            document.getElementById('depressionScore').textContent = results.depression;
+            document.getElementById('depressionCategory').textContent = depressionCategory.label;
+            document.getElementById('depressionCategory').style.backgroundColor = depressionCategory.color;
+
+            // Update anxiety results  
+            const anxietyCategory = getCategory('anxiety', results.anxiety);
+            document.getElementById('anxietyScore').textContent = results.anxiety;
+            document.getElementById('anxietyCategory').textContent = anxietyCategory.label;
+            document.getElementById('anxietyCategory').style.backgroundColor = anxietyCategory.color;
+
+            // Update stress results
+            const stressCategory = getCategory('stress', results.stress);
+            document.getElementById('stressScore').textContent = results.stress;
+            document.getElementById('stressCategory').textContent = stressCategory.label;
+            document.getElementById('stressCategory').style.backgroundColor = stressCategory.color;
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize the form when page loads
+        document.addEventListener('DOMContentLoaded', initializeForm);
+    </script>
+            <!-- AOS -->
+        <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+        <script>
+            AOS.init();
+        </script>
+</body>
+</html>
